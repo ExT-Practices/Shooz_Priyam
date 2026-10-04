@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", sans-serif;
+
+  --text-xs: 0px;
+  --text-sm: 12px;
+  --text-md: 12.8px;
+  --text-lg: 14px;
+  --text-xl: 16px;
+  --text-2xl: 18px;
+  --text-3xl: 20px;
+  --text-4xl: 22px;
+
+  --color-text-primary: #333333;
+  --color-text-tertiary: #ffffff;
+
+  --color-surface-base: #000000;
+  --color-surface-raised: #ae3f4f;
+  --color-surface-strong: #4e4991;
+
+  --spacing-1: 1px;
+  --spacing-2: 2px;
+  --spacing-3: 3px;
+  --spacing-4: 4px;
+  --spacing-5: 6px;
+  --spacing-6: 8px;
+  --spacing-7: 10px;
+  --spacing-8: 12px;
+
+  --radius-xs: 4px;
+  --radius-sm: 50px;
+
+  --transition-duration-instant: 150ms;
+  --transition-duration-fast: 200ms;
+  --transition-duration-normal: 250ms;
+  --transition-duration-slow: 300ms;
+  --transition-duration-slower: 400ms;
+  --transition-duration-step6: 500ms;
+  --transition-duration-step7: 600ms;
+  --transition-duration-step8: 700ms;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  line-height: 25.6px;
+  color: var(--color-text-primary);
+  background-color: var(--color-text-tertiary);
+  margin: 0;
+  padding: 0;
+}
+
+
+*:focus-visible {
+  outline: 2px solid var(--color-surface-strong);
+  outline-offset: 2px;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.swiper-slide-active .animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+}
+
+@keyframes modalFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-modal-fade-in-up {
+  animation: modalFadeInUp 0.8s ease-out forwards;
+}
+
+
+.hero-swiper-container .swiper-pagination {
+  bottom: 32px !important;
+}
+
+.hero-swiper-container .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background-color: #9ca3af;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.hero-swiper-container .swiper-pagination-bullet:hover {
+  background-color: #d1d5db;
+}
+
+.hero-swiper-container .swiper-pagination-bullet-active {
+  background-color: var(--color-surface-raised);
+  outline: 2px solid var(--color-surface-raised);
+  outline-offset: 2px;
+}
