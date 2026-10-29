@@ -28,7 +28,7 @@ const Wishlist = () => {
               {wishlistItems.map((product) => (
                 <div key={product.id} className="flex flex-row items-center gap-6 pb-6 border-b lg:border-none border-gray-100">
                   <div className="w-[120px] h-[120px] bg-[#f8f8f8] flex-shrink-0 overflow-hidden">
-                    <img src={product.image1} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={product.images?.[0] || product.image1} alt={product.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col items-start gap-1">
                     <h3 className="text-3xl font-bold text-text-primary">{product.name}</h3>

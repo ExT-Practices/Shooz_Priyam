@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 
@@ -7,30 +8,52 @@ import col2 from '../assets/images/col-2.png';
 import col3 from '../assets/images/col-3.png';
 import col6 from '../assets/images/col-6.png';
 
-const categories = [
+const defaultCategories = [
   {
     id: 1,
-    title: 'Athletic Footwear 8',
+    title: 'Athletic Footwear',
     image: col1,
   },
   {
     id: 2,
-    title: 'Luxury Leather Shoes 8',
+    title: 'Luxury Leather Shoes',
     image: col2,
   },
   {
     id: 3,
-    title: 'Sustainable Footwear 8',
+    title: 'Sustainable Footwear',
     image: col3,
   },
   {
     id: 4,
-    title: 'Sandals & Slides 8',
+    title: 'Sandals & Slides',
     image: col6,
   },
 ];
 
 const CategorySlider = () => {
+  const [categories, setCategories] = useState(defaultCategories);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const formatted = data.map(c => ({
+            id: c._id,
+            title: c.name,
+            image: c.image || col1 // fallback image if not provided
+          }));
+          setCategories(formatted);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <section className="py-16 container mx-auto px-5 lg:px-10">
       <div className="text-center mb-12 flex flex-col items-center">
@@ -57,9 +80,11 @@ const CategorySlider = () => {
       >
         {categories.map((category) => (
           <SwiperSlide key={category.id}>
-            <div className="group relative overflow-hidden cursor-pointer m-8">
-              
-              <div className="w-full aspect-square overflow-hidden bg-gray-100">
+            <Link 
+              to={`/shop?category=${encodeURIComponent(category.title)}`}
+              className="block group relative overflow-hidden cursor-pointer m-8"
+            >
+              <div className="w-full aspect-square overflow-hidden bg-gray-100 rounded-lg">
                 <img
                   src={category.image}
                   alt={category.title}
@@ -67,13 +92,12 @@ const CategorySlider = () => {
                 />
               </div>
               
-              
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-11/12 max-w-[280px]">
-                <div className="bg-white text-black font-semibold text-center py-3.5 px-4 text-xl tracking-wide transition-colors duration-300 group-hover:bg-[#ae3f4f] group-hover:text-white">
+                <div className="bg-white text-black font-semibold text-center py-3.5 px-4 text-lg tracking-wide shadow-md transition-colors duration-300 group-hover:bg-[#ae3f4f] group-hover:text-white rounded">
                   {category.title}
                 </div>
               </div>
-            </div>
+            </Link>
           </SwiperSlide>
         ))}
       </Swiper>

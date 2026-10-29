@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import bannerImg from '../assets/images/bann-2.png';
 
 const PromoBanner = () => {
@@ -19,9 +20,9 @@ const PromoBanner = () => {
           <p className="text-gray-800 text-xl mb-8">
             Our collection features comfortable and stylish footwear designed to keep your feet happy all day long.
           </p>
-          <button className="w-fit mx-auto lg:mx-0 bg-[#b44858] text-white px-10 py-2.5 text-md font-bold tracking-wider hover:bg-black transition-colors duration-300 flex items-center gap-2">
-            SHOP NOW <span className="mb-4 text-3xl font-bold">&rarr;</span>
-          </button>
+          <Link to="/shop" className="w-fit mx-auto lg:mx-0 bg-[#b44858] text-white px-10 py-3 text-sm font-bold tracking-wider hover:bg-black transition-colors duration-300 flex items-center gap-2">
+            SHOP NOW <span className="text-xl font-bold">&rarr;</span>
+          </Link>
         </div>
       </div>
 

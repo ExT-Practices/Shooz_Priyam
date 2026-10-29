@@ -1,0 +1,48 @@
+.admin-card {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.admin-input-base {
+  height: 44px;
+  font-size: 14px;
+  color: #f8fafc;
+  background-color: #090d16;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding-left: 16px;
+  padding-right: 16px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.admin-input-base:focus {
+  border-color: #ae3f4f;
+}
+
+.admin-table-th {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  background-color: #0b101d;
+  border-bottom: 1px solid #1e293b;
+}
+
+.admin-table-td {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 14px;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+}

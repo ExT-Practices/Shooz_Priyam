@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import img1 from '../assets/images/grid-three-1.png';
 import img2 from '../assets/images/grid-three-2.png';
 import img3 from '../assets/images/grid-three-3.png';
@@ -9,21 +10,21 @@ const collections = [
     subtitle: 'TRENDING',
     title: 'Men\nCollections',
     image: img1,
-    link: '#'
+    link: '/shop?category=Men'
   },
   {
     id: 2,
     subtitle: 'LATEST',
     title: 'Women\nCollections',
     image: img2,
-    link: '#'
+    link: '/shop?category=Women'
   },
   {
     id: 3,
     subtitle: 'COMFORT',
     title: 'Kid\nCollections',
     image: img3,
-    link: '#'
+    link: '/shop?category=Kids'
   }
 ];
 
@@ -44,12 +45,12 @@ const CollectionGrid = () => {
               <h3 className="text-3xl lg:text-[32px] leading-[1.2] font-bold mb-6 text-gray-900 whitespace-pre-line">
                 {item.title}
               </h3>
-              <a 
-                href={item.link} 
+              <Link 
+                to={item.link} 
                 className="text-[#f15f6f] hover:text-[#ae3f4f] text-[14px] font-semibold tracking-wide border-b border-[#f15f6f] hover:border-[#ae3f4f] pb-1 transition-colors duration-300 pointer-events-auto cursor-pointer"
               >
                 SHOP NOW
-              </a>
+              </Link>
             </div>
           </div>
         ))}

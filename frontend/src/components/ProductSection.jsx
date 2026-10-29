@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ShoppingCart, Eye, Heart, ArrowLeftRight } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
@@ -8,109 +9,6 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-import p1 from '../assets/images/product-1.jpg';
-import p2 from '../assets/images/product-2.jpg';
-import p3 from '../assets/images/product-3.jpg';
-import p4 from '../assets/images/product-4.jpg';
-import p7 from '../assets/images/product-7.jpg';
-import p8 from '../assets/images/product-8.jpg';
-import p11 from '../assets/images/product-11.jpg';
-import p15 from '../assets/images/product-15.jpg';
-import p16 from '../assets/images/product-16.jpg';
-import p17 from '../assets/images/product-17.jpg';
-import p18 from '../assets/images/product-18.jpg';
-import p19 from '../assets/images/product-19.jpg';
-import p20 from '../assets/images/product-20.jpg';
-import p21 from '../assets/images/product-21.jpg';
-import p22 from '../assets/images/product-22.jpg';
-import p23 from '../assets/images/product-23.jpg';
-import p26 from '../assets/images/product-26.jpg';
-
-const products = [
-  {
-    id: 1,
-    name: 'Classic White Tennis Sneakers',
-    brand: 'SportyFeet',
-    price: 25.0,
-    image1: p1,
-    image2: p2,
-  },
-  {
-    id: 2,
-    name: 'Waterproof Hiking Boots',
-    brand: 'TrailGear',
-    price: 25.0,
-    image1: p3,
-    image2: p4,
-    countdown: { days: 1526, hours: 2, mins: 28, secs: 21 },
-    colors: ['#000', '#666', '#333'],
-  },
-  {
-    id: 3,
-    name: 'Classic Leather Sneakers',
-    brand: 'UrbanStep',
-    price: 21.0,
-    image1: p7,
-    image2: p8,
-  },
-  {
-    id: 4,
-    name: 'High-Top Canvas Sneakers',
-    brand: 'TrendyFeet',
-    price: 25.0,
-    image1: p11,
-    image2: p15,
-  },
-  {
-    id: 5,
-    name: 'Running Performance Shoes',
-    brand: 'PaceMaker',
-    price: 35.0,
-    image1: p16,
-    image2: p17,
-  },
-  {
-    id: 6,
-    name: 'Casual Slip-on Kicks',
-    brand: 'ComfyWalk',
-    price: 18.0,
-    image1: p18,
-    image2: p19,
-  },
-  {
-    id: 7,
-    name: 'Urban Trail Runners',
-    brand: 'TrailGear',
-    price: 45.0,
-    image1: p20,
-    image2: p21,
-  },
-  {
-    id: 8,
-    name: 'Vintage Skate Sneakers',
-    brand: 'BoardWalk',
-    price: 28.0,
-    image1: p22,
-    image2: p23,
-    colors: ['#8b0000', '#00008b'],
-  },
-  {
-    id: 9,
-    name: 'Premium Gym Training Shoes',
-    brand: 'SportyFeet',
-    price: 55.0,
-    image1: p26,
-    image2: p1,
-  },
-  {
-    id: 10,
-    name: 'Lightweight Walking Sneakers',
-    brand: 'UrbanStep',
-    price: 32.0,
-    image1: p2,
-    image2: p3,
-  },
-];
 
 const CountdownTimer = ({ initialCountdown }) => {
   const [timeLeft, setTimeLeft] = useState(initialCountdown);
@@ -119,7 +17,7 @@ const CountdownTimer = ({ initialCountdown }) => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         let { days, hours, mins, secs } = prev;
-        
+
         if (secs > 0) {
           secs--;
         } else {
@@ -141,7 +39,7 @@ const CountdownTimer = ({ initialCountdown }) => {
             }
           }
         }
-        
+
         return { days, hours, mins, secs };
       });
     }, 1000);
@@ -173,8 +71,30 @@ const CountdownTimer = ({ initialCountdown }) => {
 
 const ProductSection = () => {
   const [activeTab, setActiveTab] = useState('FEATURED');
+  const [products, setProducts] = useState([]);
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const displayedProducts = products.filter(product => {
+    if (activeTab === 'FEATURED') return product.isFeatured;
+    if (activeTab === 'NEW ARRIVALS') return product.isNewArrival;
+    if (activeTab === 'BEST SELLER') return product.isBestSeller;
+    return true;
+  });
+  const productsToRender = displayedProducts.length > 0 ? displayedProducts : products;
 
   return (
     <section className="py-10 lg:py-16 container mx-auto px-5 lg:px-10">
@@ -192,11 +112,10 @@ const ProductSection = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-2 uppercase tracking-wide transition-colors ${
-                activeTab === tab
-                  ? 'border-b-2 border-black text-black'
+              className={`pb-2 uppercase tracking-wide transition-colors cursor-pointer ${activeTab === tab
+                  ? 'border-b-2 border-black text-black font-bold'
                   : 'text-gray-500 hover:text-black'
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -215,28 +134,28 @@ const ProductSection = () => {
         }}
         className="pb-10"
       >
-        {products.map((product) => (
-          <SwiperSlide key={product.id}>
+        {productsToRender.map((product) => (
+          <SwiperSlide key={product._id || product.id}>
             <div className="group flex flex-col h-full bg-white relative px-7 cursor-pointer">
-              <div className="relative bg-[#f8f8f8] w-full aspect-square overflow-hidden mb-4">
+              <Link to={`/product/${product._id}`} className="relative bg-[#f8f8f8] w-full aspect-square overflow-hidden mb-4 block">
                 <img
-                  src={product.image1}
+                  src={product.images && product.images.length > 0 ? product.images[0] : product.image1}
                   alt={product.name}
                   className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-100 group-hover:opacity-0"
                 />
                 <img
-                  src={product.image2}
+                  src={product.images && product.images.length > 1 ? product.images[1] : (product.image2 || product.images?.[0])}
                   alt={product.name}
                   className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 opacity-0 group-hover:opacity-100"
                 />
 
-                
+
                 {product.countdown && (
                   <CountdownTimer initialCountdown={product.countdown} />
                 )}
-              </div>
+              </Link>
 
-              
+
               <div className="flex flex-col px-2 bg-white relative z-10 transition-transform duration-300 ease-in-out lg:group-hover:-translate-y-[60px]">
                 {product.colors && (
                   <div className="flex gap-1.5 mb-3">
@@ -255,12 +174,12 @@ const ProductSection = () => {
                 <h3 className="text-3xl mb-1 truncate text-gray-900">{product.name}</h3>
                 <p className="text-gray-400 text-xl my-5">{product.brand}</p>
 
-                
+
                 <div className="flex items-center justify-between transition-all duration-300 ease-in-out
                                 pt-4 mt-2 border-t border-dashed border-gray-200
                                 lg:absolute lg:top-full lg:left-0 lg:right-0 lg:px-2 lg:pb-4 lg:bg-white 
                                 lg:opacity-0 lg:pointer-events-none lg:group-hover:opacity-100 lg:group-hover:pointer-events-auto">
-                  <button 
+                  <button
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(product); }}
                     className="flex items-center gap-5 text-lg hover:text-[#f15f6f] transition-colors"
                   >
@@ -269,12 +188,12 @@ const ProductSection = () => {
                   </button>
                   <div className="flex items-center gap-3.5">
                     <button className="hover:text-black transition-colors" title="Quick View"><Eye size={20} /></button>
-                    <button 
+                    <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product); }}
-                      className={`transition-colors ${isInWishlist(product.id) ? 'text-black' : 'hover:text-black'}`} 
-                      title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                      className={`transition-colors ${isInWishlist(product._id || product.id) ? 'text-black' : 'hover:text-black'}`}
+                      title={isInWishlist(product._id || product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
                     >
-                      <Heart size={20} fill={isInWishlist(product.id) ? 'currentColor' : 'none'} />
+                      <Heart size={20} fill={isInWishlist(product._id || product.id) ? 'currentColor' : 'none'} />
                     </button>
                     <button className="hover:text-black transition-colors" title="Compare"><ArrowLeftRight size={20} /></button>
                   </div>

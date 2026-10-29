@@ -51,7 +51,7 @@ const Account = () => {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('priyampatel968@gmail.com');
+  const [email, setEmail] = useState('');
   
   const [tempFirstName, setTempFirstName] = useState('');
   const [tempLastName, setTempLastName] = useState('');
@@ -61,6 +61,46 @@ const Account = () => {
   const [addresses, setAddresses] = useState([]);
   const [editingAddressIndex, setEditingAddressIndex] = useState(null);
   
+  const [orders, setOrders] = useState([]);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('/api/users/profile', {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setFirstName(data.firstName || '');
+        setLastName(data.lastName || '');
+        setEmail(data.email || '');
+        setAddresses(data.addresses || []);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch('/api/orders/mine', {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      const data = await res.json();
+      setOrders(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
@@ -81,9 +121,6 @@ const Account = () => {
     postcode: '',
     isDefault: false,
   });
-
-  const { logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -110,11 +147,29 @@ const Account = () => {
     setShowEditProfileModal(true);
   };
 
-  const handleSaveProfile = () => {
-    setFirstName(tempFirstName);
-    setLastName(tempLastName);
-    setEmail(tempEmail);
-    setShowEditProfileModal(false);
+  const handleSaveProfile = async () => {
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          firstName: tempFirstName,
+          lastName: tempLastName,
+          email: tempEmail
+        })
+      });
+      if (res.ok) {
+        setFirstName(tempFirstName);
+        setLastName(tempLastName);
+        setEmail(tempEmail);
+        setShowEditProfileModal(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleAddAddressClick = () => {
@@ -139,15 +194,34 @@ const Account = () => {
     setShowAddressModal(true);
   };
 
-  const handleSaveAddress = () => {
+  const handleSaveAddress = async () => {
+    let updatedAddresses;
     if (editingAddressIndex !== null) {
-      const updatedAddresses = [...addresses];
+      updatedAddresses = [...addresses];
       updatedAddresses[editingAddressIndex] = addressData;
-      setAddresses(updatedAddresses);
     } else {
-      setAddresses([...addresses, addressData]);
+      updatedAddresses = [...addresses, addressData];
     }
-    setShowAddressModal(false);
+    
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          addresses: updatedAddresses
+        })
+      });
+      
+      if (res.ok) {
+        setAddresses(updatedAddresses);
+        setShowAddressModal(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const hasChanges = tempFirstName !== firstName || tempLastName !== lastName || tempEmail !== email;
@@ -191,70 +265,55 @@ const Account = () => {
         
         <div className="flex-1 w-full max-w-[700px]">
           {activeTab === 'orders' ? (
-            <div className="w-full border border-gray-100 rounded-[20px] p-8 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] relative overflow-hidden bg-white">
-              <div className="flex justify-between items-start mb-8 z-10 relative">
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-[22px] font-bold text-gray-900">Welcome</h2>
-                  <p className="text-[16px] text-gray-500">Ready to shop?</p>
+            <div className="w-full flex flex-col gap-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-gray-900">Order History</h3>
+              </div>
+              {orders.length === 0 ? (
+                <div className="border border-gray-100 rounded-[12px] p-7 shadow-sm bg-white text-center">
+                  <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
+                  <button onClick={() => navigate('/')} className="bg-[#1b4bc3] hover:bg-[#153ea3] text-white text-[15px] font-medium px-6 py-2.5 rounded-[8px] transition-colors">
+                    Start Shopping
+                  </button>
                 </div>
-                <button className="bg-[#1b4bc3] hover:bg-[#153ea3] text-white text-[15px] font-medium px-6 py-2.5 rounded-[8px] transition-colors">
-                  Shop now
-                </button>
-              </div>
-
-              <div className="flex justify-center items-center mt-12 mb-4 relative z-0 h-[140px] w-full overflow-hidden">
-                {allShoes.map((src, i) => {
-                  const pos = (i - offset + 10) % 10;
-                  let transform = '';
-                  let opacity = 1;
-                  let zIndex = 1;
-
-                  switch(pos) {
-                    case 0:
-                      transform = 'translateX(-348px) translateY(24px) scale(0.5)';
-                      opacity = 0;
-                      break;
-                    case 1:
-                      transform = 'translateX(-232px) translateY(24px) rotate(-15deg) scale(0.9)';
-                      break;
-                    case 2:
-                      transform = 'translateX(-116px) translateY(8px) rotate(-5deg) scale(1)';
-                      zIndex = 2;
-                      break;
-                    case 3:
-                      transform = 'translateX(0px) translateY(-8px) rotate(0deg) scale(1.1)';
-                      zIndex = 10;
-                      break;
-                    case 4:
-                      transform = 'translateX(116px) translateY(8px) rotate(5deg) scale(1)';
-                      zIndex = 2;
-                      break;
-                    case 5:
-                      transform = 'translateX(232px) translateY(24px) rotate(15deg) scale(0.9)';
-                      break;
-                    case 6:
-                      transform = 'translateX(348px) translateY(24px) scale(0.5)';
-                      opacity = 0;
-                      break;
-                    default:
-                      transform = 'translateX(348px) translateY(24px) scale(0.5)';
-                      opacity = 0;
-                      break;
-                  }
-
-                  const transition = pos >= 7 || pos === 9 ? 'none' : 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-
-                  return (
-                    <div 
-                      key={i} 
-                      className="absolute w-[100px] h-[100px] bg-gray-50 rounded-[16px] flex items-center justify-center p-3 shadow-sm"
-                      style={{ transform, opacity, zIndex, transition }}
-                    >
-                      <img src={src} alt="shoe" className="object-contain w-full h-full mix-blend-multiply" />
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {orders.map((order) => (
+                    <div key={order._id} className="border border-gray-100 rounded-[12px] p-6 shadow-sm bg-white flex flex-col gap-4">
+                      <div className="flex justify-between items-center border-b pb-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Order ID</p>
+                          <p className="font-medium">{order._id.substring(0, 10)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Date</p>
+                          <p className="font-medium">{order.createdAt.substring(0, 10)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Total</p>
+                          <p className="font-medium">${order.totalPrice.toFixed(2)}</p>
+                        </div>
+                        <div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${order.isDelivered ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {order.isDelivered ? 'Delivered' : 'Processing'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {order.orderItems.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-4">
+                            <img src={item.image} alt={item.name} className="w-12 h-12 rounded object-cover border" />
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">{item.name}</p>
+                              <p className="text-xs text-gray-500">Qty: {item.qty} | ${item.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="w-full flex flex-col gap-9">

@@ -1,22 +1,28 @@
-import React from 'react';
-import img1 from '../assets/images/product-3.jpg';
-import img2 from '../assets/images/product-4.jpg';
-import img3 from '../assets/images/product-15.jpg';
-
-const products = [
-  { id: 1, name: 'Classic White Tennis Sneakers', price: '25.00', image: img2 },
-  { id: 2, name: 'Waterproof Hiking Boots', price: '25.00', image: img3 },
-  { id: 3, name: 'Classic Leather Sneakers', price: '21.00', image: img1 },
-];
-
-
-const gridItems = [
-  products[0], products[0], products[0],
-  products[1], products[1], products[1],
-  products[2], products[2], products[2],
-];
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const DiscountSection = () => {
+  const [gridItems, setGridItems] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        if (data && data.length >= 3) {
+            // Replicate the 9-item grid pattern using the first 3 products
+            setGridItems([
+                data[0], data[0], data[0],
+                data[1], data[1], data[1],
+                data[2], data[2], data[2]
+            ]);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
   return (
     <section className="py-20 px-4 md:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -36,28 +42,29 @@ const DiscountSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10">
           {gridItems.map((item, index) => (
-            <div 
+            <Link 
+              to={`/product/${item._id}`}
               key={index} 
-              className={`flex items-center gap-6 py-8 border-b border-gray-200 ${
+              className={`flex items-center gap-6 py-8 border-b border-gray-200 hover:bg-gray-50 transition-colors ${
                 index >= 6 ? 'md:border-b-0' : ''
               } ${index === 8 ? 'border-b-0' : ''}`}
             >
               <div className="w-24 h-24 bg-gray-50 flex items-center justify-center p-2 rounded-sm shrink-0">
                 <img 
-                  src={item.image} 
+                  src={item.images && item.images.length > 0 ? item.images[0] : ''} 
                   alt={item.name} 
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
               <div>
-                <h3 className="text-[20px] text-gray-900 font-medium mb-1">
+                <h3 className="text-[20px] text-gray-900 font-medium mb-1 group-hover:text-blue-600 transition-colors">
                   {item.name}
                 </h3>
                 <p className="text-[18px] text-gray-600">
-                  ${item.price}
+                  ${typeof item.price === 'number' ? item.price.toFixed(2) : item.price}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

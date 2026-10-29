@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, EffectFade } from 'swiper/modules';
@@ -11,7 +12,7 @@ import banner1 from '../assets/images/bann-1.png';
 import banner2 from '../assets/images/bann-2.png';
 import banner3 from '../assets/images/bann-3.png';
 
-const slides = [
+const defaultSlides = [
   {
     id: 1,
     image: banner1,
@@ -19,6 +20,7 @@ const slides = [
     title: "Discover The Latest\nTrends In Footwear",
     description: "From classic sneakers to trendy boots, our\ncollection has something for everyone.",
     position: "right",
+    link: "/shop"
   },
   {
     id: 2,
@@ -27,6 +29,7 @@ const slides = [
     title: "Find The Perfect Pair Of Shoes To Complete.",
     description: "Explore our wide range of styles, colors, and\nmaterials to find the perfect shoes for any occasion.",
     position: "right",
+    link: "/shop"
   },
   {
     id: 3,
@@ -35,10 +38,38 @@ const slides = [
     title: "Discover Shoes That Look Great And Feel Even Better.",
     description: "Our collection features comfortable and stylish footwear\ndesigned to keep your feet happy all day long.",
     position: "left",
+    link: "/shop"
   }
 ];
 
 const Hero = () => {
+  const [slides, setSlides] = useState(defaultSlides);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch('/api/banners');
+        const data = await res.json();
+        const activeBanners = Array.isArray(data) ? data.filter(b => b.isActive !== false) : [];
+        if (activeBanners.length > 0) {
+          const formatted = activeBanners.map(b => ({
+            id: b._id,
+            image: b.image,
+            subtitle: b.subtitle || "TRENDING COLLECTION",
+            title: b.title,
+            description: b.description || "",
+            position: b.position || "left",
+            link: b.link || "/shop"
+          }));
+          setSlides(formatted);
+        }
+      } catch (error) {
+        console.error("Failed to fetch banners", error);
+      }
+    };
+    fetchBanners();
+  }, []);
+
   return (
     <div className="relative w-full flex-1 min-h-[600px] lg:min-h-[800px] hero-swiper-container overflow-hidden">
       <Swiper
@@ -72,9 +103,12 @@ const Hero = () => {
                   <p className="text-[18px] lg:text-[18px] text-gray-200 mb-10 leading-relaxed whitespace-pre-line">
                     {slide.description}
                   </p>
-                  <button className="bg-surface-raised hover:bg-surface-strong text-white font-semibold text-[14px] px-10 py-8 tracking-wide transition-colors duration-fast flex items-center gap-3">
+                  <Link 
+                    to={slide.link || "/shop"}
+                    className="bg-surface-raised hover:bg-surface-strong text-white font-semibold text-[14px] px-10 py-4 tracking-wide transition-colors duration-fast flex items-center gap-3 w-fit cursor-pointer"
+                  >
                     SHOP NOW <ArrowRight size={18} strokeWidth={2} />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

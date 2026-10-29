@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Package, FileText, Ticket, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const CartDrawer = () => {
   const { isCartOpen, setIsCartOpen, cartItems, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -54,7 +56,7 @@ const CartDrawer = () => {
             cartItems.map((item) => (
               <div key={item.id} className="flex gap-9">
                 <div className="w-[80px] h-[80px] bg-[#f8f8f8] flex-shrink-0">
-                  <img src={item.image1} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={item.images?.[0] || item.image1} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col flex-1">
                   <h3 className="text-[14px] text-text-primary mb-1 leading-tight">{item.name}</h3>
@@ -118,7 +120,12 @@ const CartDrawer = () => {
           
           <p className="text-[12px] text-gray-500 mb-5">Taxes and shipping calculated at checkout</p>
           
-          <button className="bg-[#ae3f4f] w-[50%] self-end hover:bg-black text-white font-bold text-[14px] tracking-wide py-3.5 transition-colors duration-300">
+          <button 
+            onClick={() => {
+              setIsCartOpen(false);
+              navigate('/checkout');
+            }}
+            className="bg-[#ae3f4f] w-[50%] self-end hover:bg-black text-white font-bold text-[14px] tracking-wide py-3.5 transition-colors duration-300">
             CHECK OUT
           </button>
         </div>

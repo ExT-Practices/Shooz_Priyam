@@ -11,7 +11,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!email) {
@@ -30,9 +30,29 @@ const LoginModal = ({ isOpen, onClose }) => {
     }
 
     setError('');
-    login();
-    onClose();
-    navigate('/account');
+    
+    try {
+        const res = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          login(data);
+          onClose();
+          if (data.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/account');
+          }
+        } else {
+          setError(data.message || 'Login failed');
+        }
+    } catch (err) {
+        setError('Network error');
+    }
   };
 
   if (!isOpen) return null;

@@ -12,7 +12,12 @@ const Register = () => {
   
   const isActive = email.length > 0 || isFocused;
 
-  const handleRegister = (e) => {
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleAuth = async (e) => {
     if (e) e.preventDefault();
     
     if (!email) {
@@ -26,8 +31,58 @@ const Register = () => {
     }
 
     setError('');
-    login();
-    navigate('/account');
+    setSuccessMsg('');
+    setLoading(true);
+
+    try {
+      if (!showPassword) {
+        // Registration flow
+        const res = await fetch('/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          setSuccessMsg(data.message);
+          setShowPassword(true);
+        } else if (res.status === 400 && data.message === 'User already exists') {
+          // User exists, ask for password
+          setShowPassword(true);
+        } else {
+          setError(data.message || 'Registration failed');
+        }
+      } else {
+        // Login flow
+        if (!password) {
+          setError('Please enter your password.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          login(data);
+          if (data.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/account');
+          }
+        } else {
+          setError(data.message || 'Login failed');
+        }
+      }
+    } catch (err) {
+      setError('Network error');
+    }
+    setLoading(false);
   };
 
   return (
@@ -45,7 +100,7 @@ const Register = () => {
           <h2 className="text-[24px] font-bold text-gray-900 mb-1">Sign in</h2>
           <p className="text-[14px] text-gray-500 mb-6">Sign in or create an account</p>
 
-          <button onClick={handleRegister} className="w-full bg-[#5a31f4] hover:bg-[#4a26d1] text-white rounded-[6px] py-3.5 flex justify-center items-center gap-1.5 transition-colors mb-6">
+          <button onClick={handleAuth} className="w-full bg-[#5a31f4] hover:bg-[#4a26d1] text-white rounded-[6px] py-3.5 flex justify-center items-center gap-1.5 transition-colors mb-6">
             <span className="text-[15px] font-medium tracking-wide">Continue with <span className="font-bold">shop</span></span>
           </button>
 
@@ -55,7 +110,7 @@ const Register = () => {
             <div className="flex-1 h-[1px] bg-gray-200"></div>
           </div>
 
-          <div className={`relative w-full mb-4 rounded-[6px] bg-white border transition-all ${error ? 'border-red-500' : isFocused ? 'border-[#0058a3] ring-1 ring-[#0058a3]' : 'border-gray-300 hover:border-gray-400'}`}>
+          <div className={`relative w-full mb-4 rounded-[6px] bg-white border transition-all ${error && !showPassword ? 'border-red-500' : isFocused && !showPassword ? 'border-[#0058a3] ring-1 ring-[#0058a3]' : 'border-gray-300 hover:border-gray-400'}`}>
             <label 
               htmlFor="email-input"
               className={`absolute left-4 transition-all duration-200 pointer-events-none text-gray-500 ${isActive ? 'top-1.5 text-[11px]' : 'top-1/2 -translate-y-1/2 text-[15px]'}`}
@@ -66,16 +121,35 @@ const Register = () => {
               id="email-input"
               type="email"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(''); }}
+              onChange={(e) => { setEmail(e.target.value); setError(''); setSuccessMsg(''); }}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              className="w-full bg-transparent px-4 pr-12 pt-6 pb-2 outline-none border-none focus:outline-none focus:ring-0 focus:border-none text-[15px]"
+              disabled={showPassword}
+              className={`w-full bg-transparent px-4 pr-12 pt-6 pb-2 outline-none border-none focus:outline-none focus:ring-0 focus:border-none text-[15px] ${showPassword ? 'text-gray-400' : ''}`}
             />
-            <button onClick={handleRegister} className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-[4px] transition-colors ${email.length > 0 ? 'bg-[#0058a3] text-white hover:bg-[#004682]' : 'text-gray-400 hover:text-gray-600'}`}>
-              <ArrowRight size={20} strokeWidth={1.5} />
-            </button>
+            {!showPassword && (
+              <button onClick={handleAuth} disabled={loading} className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-[4px] transition-colors ${email.length > 0 ? 'bg-[#0058a3] text-white hover:bg-[#004682]' : 'text-gray-400 hover:text-gray-600'}`}>
+                <ArrowRight size={20} strokeWidth={1.5} />
+              </button>
+            )}
           </div>
 
+          {showPassword && (
+            <div className="relative w-full mb-4 rounded-[6px] bg-white border transition-all border-gray-300 hover:border-gray-400">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-transparent px-4 py-4 outline-none border-none focus:outline-none focus:ring-0 focus:border-none text-[15px]"
+              />
+              <button onClick={handleAuth} disabled={loading} className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-[4px] bg-[#0058a3] text-white hover:bg-[#004682] transition-colors">
+                <ArrowRight size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
+
+          {successMsg && <p className="text-green-600 text-[13px] -mt-2 mb-4 self-start pl-1">{successMsg}</p>}
           {error && <p className="text-red-500 text-[13px] -mt-2 mb-4 self-start pl-1">{error}</p>}
 
           <label className="flex items-center gap-3 cursor-pointer group">

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { Search, User, Heart, ShoppingBag, ChevronDown, Menu, X, Plus, Minus } from 'lucide-react';
+import { Search, User, Heart, ShoppingBag, ChevronDown, Menu, X, Plus, Minus, ArrowRight } from 'lucide-react';
 import logo from '../assets/logo.png';
 import col4 from '../assets/images/col-4.png';
 import col5 from '../assets/images/col-5.png';
@@ -12,9 +12,12 @@ import filler1 from '../assets/images/filler1.png';
 import LoginModal from './LoginModal';
 
 const Header = () => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileSubmenus, setOpenMobileSubmenus] = useState({});
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { wishlistItems } = useWishlist();
   const { cartCount, setIsCartOpen } = useCart();
   const { isLoggedIn, logout } = useAuth();
@@ -96,10 +99,10 @@ const Header = () => {
       <div className="container mx-auto px-5 lg:px-[70px] py-8.5 lg:py-10 flex justify-between items-center relative">
         
         <div className="flex lg:hidden items-center gap-5.5 ms-5 md:ms-10">
-          <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Menu" className="text-text-primary hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none">
+          <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Menu" className="text-text-primary hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none cursor-pointer">
             <Menu size={23} strokeWidth={1.5} />
           </button>
-          <button aria-label="Search" className="text-text-primary hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none">
+          <button onClick={() => setIsSearchOpen(true)} aria-label="Search" className="text-text-primary hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none cursor-pointer">
             <Search size={23} strokeWidth={1.5} />
           </button>
         </div>
@@ -111,18 +114,18 @@ const Header = () => {
 
         
         <nav className="hidden lg:flex items-center gap-10 text-[16px] font-semibold text-text-primary tracking-wide">
-          <a href="#" className="text-surface-raised relative group focus-visible:outline-none">
+          <Link to="/" className="text-surface-raised relative group focus-visible:outline-none">
             <span className="transition-colors duration-fast">Home</span>
             <span className="absolute -bottom-2.5 left-0 w-full h-[2px] bg-surface-raised"></span>
-          </a>
+          </Link>
           
           <div className="group static">
-            <a href="#" className="flex items-center gap-1 hover:text-surface-raised group-hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none py-10 -my-10">
+            <Link to="/shop" className="flex items-center gap-1 hover:text-surface-raised group-hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none py-10 -my-10">
               <span className="relative flex items-center gap-1">
                 Shop <ChevronDown size={16} className="mt-0.5 text-gray-400 group-hover:text-surface-raised transition-colors duration-fast" />
                 <span className="absolute -bottom-2.5 left-0 w-full h-[2px] bg-surface-raised opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </span>
-            </a>
+            </Link>
             
             
             <div className="absolute top-full left-0 w-full bg-white opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
@@ -370,7 +373,7 @@ const Header = () => {
 
         
         <div className="flex items-center gap-4.5 lg:gap-7 text-text-primary me-5 md:me-10 lg:me-0">
-          <button aria-label="Search" className="hidden lg:block hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none">
+          <button onClick={() => setIsSearchOpen(true)} aria-label="Search" className="hidden lg:block hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none cursor-pointer">
             <Search size={23} strokeWidth={1.5} />
           </button>
           <button aria-label="User Account" className="hover:text-surface-raised transition-colors duration-fast focus-visible:outline-none">
@@ -667,6 +670,60 @@ const Header = () => {
       </div>
 
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+
+      {/* Modern Search Modal Dialog */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-start justify-center pt-24 px-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 border border-gray-100 overflow-hidden">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Search SHOOZ Catalog</span>
+              <button onClick={() => setIsSearchOpen(false)} className="p-1 text-gray-400 hover:text-black cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  navigate(`/shop?keyword=${encodeURIComponent(searchQuery.trim())}`);
+                  setIsSearchOpen(false);
+                  setSearchQuery('');
+                }
+              }}
+              className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-200"
+            >
+              <Search size={20} className="text-gray-400 shrink-0" />
+              <input 
+                type="text"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for athletic sneakers, boots, running shoes..."
+                className="w-full bg-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-none"
+              />
+              <button type="submit" className="bg-[#ae3f4f] hover:bg-[#8f3240] text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider shrink-0 transition-colors cursor-pointer">
+                Search
+              </button>
+            </form>
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 flex-wrap text-xs text-gray-500">
+              <span className="font-semibold text-gray-700">Popular:</span>
+              {['Sneakers', 'Running', 'Athletic', 'Boots', 'Leather'].map(tag => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => {
+                    navigate(`/shop?keyword=${encodeURIComponent(tag)}`);
+                    setIsSearchOpen(false);
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors cursor-pointer"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
